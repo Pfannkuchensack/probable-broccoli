@@ -13,6 +13,147 @@ class apicaller
 	}
 
 	/*
+		ACTIONS API
+	*/
+	/*
+		https://docs.hetzner.cloud/#actions-list-all-actions
+	*/
+	public function list_all_actions()
+	{
+		$r = $this->c->request('GET', 'actions');
+		if($r->getStatusCode() == 200)
+			return json_decode((string)$r->getBody())->actions;
+		else
+			return $r->getStatusCode();
+	}
+	/*
+		https://docs.hetzner.cloud/#actions-get-one-action
+	*/
+	public function get_one_action(int $id)
+	{
+		$r = $this->c->request('GET', 'actions/' . $id);
+		if($r->getStatusCode() == 200)
+			return json_decode((string)$r->getBody())->action;
+		else
+			return $r->getStatusCode();
+	}
+
+	/*
+		SERVER ACTIONS API
+	*/
+	/*
+		https://docs.hetzner.cloud/#server-actions-get-all-actions-for-a-server
+	*/
+	public function get_all_actions_for_a_server(int $id)
+	{
+		$r = $this->c->request('GET', 'servers/' . $id . '/actions');
+		if($r->getStatusCode() == 200)
+			return json_decode((string)$r->getBody())->actions;
+		else
+			return $r->getStatusCode();
+	}
+	/*
+		https://docs.hetzner.cloud/#server-actions-power-on-a-server
+	*/
+	public function power_on_a_server(int $id)
+	{
+		$r = $this->c->request('GET', 'servers/' . $id . '/actions/poweron');
+		if($r->getStatusCode() == 201)
+			return json_decode((string)$r->getBody())->action;
+		else
+			return $r->getStatusCode();
+	}
+	/*
+		https://docs.hetzner.cloud/#server-actions-soft-reboot-a-server
+	*/
+	public function soft_reboot_a_server(int $id)
+	{
+		$r = $this->c->request('GET', 'servers/' . $id . '/actions/reboot');
+		if($r->getStatusCode() == 201)
+			return json_decode((string)$r->getBody())->action;
+		else
+			return $r->getStatusCode();
+	}
+	/*
+		https://docs.hetzner.cloud/#server-actions-reset-a-server
+	*/
+	public function reset_a_server(int $id)
+	{
+		$r = $this->c->request('GET', 'servers/' . $id . '/actions/reset');
+		if($r->getStatusCode() == 201)
+			return json_decode((string)$r->getBody())->action;
+		else
+			return $r->getStatusCode();
+	}
+	/*
+		https://docs.hetzner.cloud/#server-actions-shutdown-a-server
+	*/
+	public function shutdown_a_server(int $id)
+	{
+		$r = $this->c->request('GET', 'servers/' . $id . '/actions/shutdown');
+		if($r->getStatusCode() == 201)
+			return json_decode((string)$r->getBody())->action;
+		else
+			return $r->getStatusCode();
+	}
+	/*
+		https://docs.hetzner.cloud/#server-actions-power-off-a-server
+	*/
+	public function power_off_a_server(int $id)
+	{
+		$r = $this->c->request('GET', 'servers/' . $id . '/actions/poweroff');
+		if($r->getStatusCode() == 201)
+			return json_decode((string)$r->getBody())->action;
+		else
+			return $r->getStatusCode();
+	}
+	/*
+		https://docs.hetzner.cloud/#server-actions-reset-root-password-of-a-server
+	*/
+	public function reset_root_password_of_a_server(int $id)
+	{
+		$r = $this->c->request('GET', 'servers/' . $id . '/actions/reset_password');
+		if($r->getStatusCode() == 201)
+		{
+			$tmp = json_decode((string)$r->getBody());
+			return ['action' => $tmp->action, 'root_password' => $tmp->root_password];
+		}
+		else
+			return $r->getStatusCode();
+	}
+	/*
+		https://docs.hetzner.cloud/#server-actions-create-image-from-a-server
+	*/
+	public function create_image_from_a_server(int $id, string $description, string $type)
+	{
+		$fd = [];
+		if($type != '')
+			$fd['type'] = $type;
+		if($description != '')
+			$fd['description'] = $description;
+		$r = $this->c->request('POST', 'servers/' . $id . '/actions/create_image', ['form_params' => $fd ]);
+		if($r->getStatusCode() == 201)
+			return json_decode((string)$r->getBody())->image;
+		else
+			return $r->getStatusCode();
+	}
+	/*
+		https://docs.hetzner.cloud/#server-actions-rebuild-a-server-from-an-image
+	*/
+	public function rebuild_a_server_from_an_image(int $id, $image)
+	{
+		$fd = ['image' => $image];
+		$r = $this->c->request('POST', 'servers/' . $id . '/actions/rebuild', ['form_params' => $fd ]);
+		if($r->getStatusCode() == 201)
+		{
+			$tmp = json_decode((string)$r->getBody());
+			return ['action' => $tmp->action, 'root_password' => $tmp->root_password];
+		}
+		else
+			return $r->getStatusCode();
+	}
+
+	/*
 		SERVER API
 	*/
 	/*
@@ -48,6 +189,28 @@ class apicaller
 		$r = $this->c->request('POST', 'servers', ['form_params' => $fd ]);
 		if($r->getStatusCode() == 201)
 			return json_decode((string)$r->getBody())->ssh_key;
+		else
+			return $r->getStatusCode();
+	}
+	/*
+		https://docs.hetzner.cloud/#servers-delete-a-server
+	*/
+	public function delete_a_server(int $id)
+	{
+		$r = $this->c->request('DELETE', 'servers/' .  $id);
+		if($r->getStatusCode() == 200)
+			return true;
+		else
+			return $r->getStatusCode();
+	}
+	/*
+		https://docs.hetzner.cloud/#servers-get-metrics-for-a-server
+	*/
+	public function get_metrics_for_a_server(int $id, string $start, string $end, array $type = ['cpu','disk','network'], int $step = 60)
+	{
+		$r = $this->c->request('GET', 'servers/' . $id . '/metrics?type=' . implode(',',$type) . "&start=" . $start . '&end=' . $end . "&step=" . $step);
+		if($r->getStatusCode() == 200)
+			return json_decode((string)$r->getBody())->metrics;
 		else
 			return $r->getStatusCode();
 	}
