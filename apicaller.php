@@ -11,16 +11,83 @@ class apicaller
 		$dotenv->load();
 		$this->c = new GuzzleHttp\Client(['base_uri' => 'https://api.hetzner.cloud/v1/', 'headers' => ['Authorization' => 'Bearer '. getenv('APIKEY')]]);
 	}
-	
-	/*
-		curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $API_TOKEN" \
-		-d '{"name": "my-server", "server_type": "cx11", "location": "nbg1", "start_after_create": true, "image": "ubuntu-16.04", "ssh_keys": ["my-ssh-key"], "volumes": ["1"], "user_data": "#cloud-config\nruncmd:\n- [touch, /root/cloud-init-worked]\n"}' \
-		https://api.hetzner.cloud/v1/servers
-	*/
-	public function create_server()
-	{
 
-		return 'hi';
+	/*
+		SERVER API
+	*/
+	/*
+		https://docs.hetzner.cloud/#servers-get-all-servers
+	*/
+	public function get_all_servers()
+	{
+		$r = $this->c->request('GET', 'servers');
+		if($r->getStatusCode() == 200)
+			return json_decode((string)$r->getBody())->servers;
+		else
+			return $r->getStatusCode();
+	}
+
+	/*
+		https://docs.hetzner.cloud/#servers-create-a-server
+	*/
+	public function create_a_server(string $name, string $server_type, $image, bool $start_after_create, $ssh_keys =[], $volumes = [], string $user_data = '', $location = '', $datacenter = '')
+	{
+		$fd = ['name' => $name, 'server_type' => $server_type, 'image' => $image];
+		if($start_after_create == false)
+			$fd['start_after_create'] = false;
+		if(!empty($ssh_keys))
+			$fd['ssh_keys'] = $ssh_keys;
+		if(!empty($volumes))
+			$fd['volumes'] = $volumes;
+		if($user_data != '')
+			$fd['user_data'] = $user_data;
+		if($location != '')
+			$fd['location'] = $location;
+		if($datacenter != '')
+			$fd['datacenter'] = $datacenter;
+		$r = $this->c->request('POST', 'servers', ['form_params' => $fd ]);
+		if($r->getStatusCode() == 201)
+			return json_decode((string)$r->getBody())->ssh_key;
+		else
+			return $r->getStatusCode();
+	}
+
+	/*
+		FLOATING IPS API
+	*/
+	/*
+		https://docs.hetzner.cloud/#floating-ips-get-all-floating-ips
+	*/
+	public function get_all_floating_ips()
+	{
+		$r = $this->c->request('GET', 'floating_ips');
+		if($r->getStatusCode() == 200)
+			return json_decode((string)$r->getBody())->floating_ips;
+		else
+			return $r->getStatusCode();
+	}
+	/*
+		https://docs.hetzner.cloud/#floating-ips-create-a-floating-ip
+	*/
+	public function create_a_floating_ip($type = 'ipv4')
+	{
+		$fd = ['type' => $name];
+		$r = $this->c->request('POST', 'floating_ips', ['form_params' => $fd ]);
+		if($r->getStatusCode() == 201)
+			return json_decode((string)$r->getBody())->ssh_key;
+		else
+			return $r->getStatusCode();
+	}
+	/*
+		https://docs.hetzner.cloud/#floating-ips-delete-a-floating-ip
+	*/
+	public function delete_a_floating_ip(int $id)
+	{
+		$r = $this->c->request('DELETE', 'floating_ips/' .  $id);
+		if($r->getStatusCode() == 204)
+			return true;
+		else
+			return $r->getStatusCode();
 	}
 
 	/*
