@@ -152,6 +152,34 @@ class apicaller
 		else
 			return $r->getStatusCode();
 	}
+	/*
+		https://docs.hetzner.cloud/#server-actions-change-the-type-of-a-server
+	*/
+	public function change_the_type_of_a_server(int $id, string $server_type, bool $upgrade_disk = false)
+	{
+		$fd = ['server_type' => $server_type, 'upgrade_disk' => $upgrade_disk];
+		$r = $this->c->request('POST', 'servers/' . $id . '/actions/change_type', ['form_params' => $fd ]);
+		if($r->getStatusCode() == 201)
+		{
+			return json_decode((string)$r->getBody())->action;
+		}
+		else
+			return $r->getStatusCode();
+	}
+	/*
+		https://docs.hetzner.cloud/#server-actions-change-protection-for-a-server
+	*/
+	public function change_protection_for_a_server(int $id, bool $delete = true, bool $rebuild = true)
+	{
+		$fd = ['delete' => $delete, 'rebuild' => $rebuild];
+		$r = $this->c->request('POST', 'servers/' . $id . '/actions/change_protection', ['form_params' => $fd ]);
+		if($r->getStatusCode() == 201)
+		{
+			return json_decode((string)$r->getBody())->action;
+		}
+		else
+			return $r->getStatusCode();
+	}
 
 	/*
 		SERVER API
@@ -396,6 +424,56 @@ class apicaller
 		$r = $this->c->request('DELETE', 'volumes/' .  $id);
 		if($r->getStatusCode() == 204)
 			return true;
+		else
+			return $r->getStatusCode();
+	}
+
+	/*
+		VOLUME ACTIONS API
+	*/
+	/*
+		https://docs.hetzner.cloud/#volume-actions-get-all-actions-for-a-volume
+	*/
+	public function get_all_actions_for_a_volume(int $id)
+	{
+		$r = $this->c->request('GET', 'volumes/' . $id . '/actions');
+		if($r->getStatusCode() == 200)
+			return json_decode((string)$r->getBody())->actions;
+		else
+			return $r->getStatusCode();
+	}
+	/*
+		https://docs.hetzner.cloud/#volume-actions-attach-volume-to-a-server
+	*/
+	public function attach_volume_to_a_server(int $id, int $server)
+	{
+		$fd = ['server' => $server];
+		$r = $this->c->request('POST', 'volumes/' . $id . '/actions/attach', ['form_params' => $fd ]);
+		if($r->getStatusCode() == 200)
+			return json_decode((string)$r->getBody())->action;
+		else
+			return $r->getStatusCode();
+	}
+	/*
+		https://docs.hetzner.cloud/#volume-actions-detach-volume
+	*/
+	public function dettach_volume(int $id, int $server)
+	{
+		$r = $this->c->request('POST', 'volumes/' . $id . '/actions/attach');
+		if($r->getStatusCode() == 201)
+			return json_decode((string)$r->getBody())->action;
+		else
+			return $r->getStatusCode();
+	}
+	/*
+		https://docs.hetzner.cloud/#volume-actions-resize-volume
+	*/
+	public function resize_volume(int $id, int $size)
+	{
+		$fd = ['size' => $size];
+		$r = $this->c->request('POST', 'volumes/' . $id . '/actions/resize', ['form_params' => $fd ]);
+		if($r->getStatusCode() == 201)
+			return json_decode((string)$r->getBody())->action;
 		else
 			return $r->getStatusCode();
 	}
