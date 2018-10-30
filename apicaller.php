@@ -477,4 +477,16 @@ class apicaller
 		else
 			return $r->getStatusCode();
 	}
+	/*
+		https://docs.hetzner.cloud/#volume-actions-change-volume-protection
+	*/
+	public function change_volume_protection(int $id, bool $delete = true)
+	{
+		$fd = ['delete' => $delete];
+		$r = $this->c->request('POST', 'volumes/' . $id . '/actions/change_protection', ['form_params' => $fd ]);
+		if($r->getStatusCode() == 201)
+			return json_decode((string)$r->getBody())->action;
+		else
+			return $r->getStatusCode();
+	}
 }
