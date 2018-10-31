@@ -489,4 +489,57 @@ class apicaller
 		else
 			return $r->getStatusCode();
 	}
+
+	/*
+		HELPER STUFF 
+	*/
+	public function render_cli($value)
+	{
+		// THIS FUNCTION IS SHIT BUT I DONT KNOW BETTER :/
+		$out = '';
+		foreach(get_object_vars($value) as $key => $v)
+		{
+			if(is_string($v) || is_integer($v))
+			{
+				$out .=  $key . ": " . $v . "\r\n";
+			}
+			elseif(is_array($v))
+			{
+				foreach($v as $k => $vv)
+				{
+					if(is_object($vv))
+					{
+						foreach(get_object_vars($vv) as $kkk => $vvv)
+						{
+							if(is_array($vvv))
+								$out . $kkk . ": " . implode(',',$vvv) . "\r\n";
+							elseif(is_object($vvv))
+							{
+								foreach(get_object_vars($vvv) as $kkkk => $vvvv)
+								{
+									if(is_array($vvvv))
+										$out . $kkkk . ": " . implode(',',$vvvv) . "\r\n";
+									else
+										$out . $kkkk . ": " . $vvvv . "\r\n";
+								}
+							}
+						}
+					}
+					else
+						$out . $k . ": " . $vv . "\r\n";
+				}
+			}
+			elseif(is_object($v))
+			{
+				foreach(get_object_vars($v) as $kk => $vv)
+				{
+					if(is_array($vv))
+						$out . $kk . ": " . implode(',',$vv) . "\r\n";
+					else
+						$out . $kk . ": " . $vv . "\r\n";
+				}
+			}
+		}
+		return $out;
+	}
 }
